@@ -1,0 +1,192 @@
+<html>
+	<head>
+		<title>Music Server</title>
+		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js"></script>
+		<style type="text/css">
+			body {
+				font-family: sans-serif;
+				background-color: #222;
+			}
+			.track {
+				background-color: rgba(255, 255, 255, 0.4);
+				margin: 10px 10px 10px 30px;
+				overflow: hidden;
+				white-space: nowrap;
+				height: 75px;
+			}
+			.track .art {
+				height: 75px;
+				position: absolute;
+				right: 18px;
+				z-index: 6;
+			}
+			.track .info {
+				position: absolute;
+				padding-left: 10px;
+				z-index: 5;
+			}
+			.track .artist {
+				font-size: 18px;
+				padding-left: 2px;
+				padding-top: 5px;
+				color: #eee;
+				font-weight: bold;
+			}
+			.track .title {
+				font-size: 40px;
+				color: #222;
+				height: 50px;
+				overflow: hidden;
+			}
+			.track .title.long {
+				padding-top: 5px;
+				font-size: 30px;
+			}
+			.track .extra {
+				text-align: right;
+				position: absolute;
+				z-index: 4;
+				padding-top: 5px;
+				color: #444;
+			}
+			.track .uploader {
+				font-size: 15px;
+			}
+			.track .length {
+				font-size: 50px;
+			}
+			
+			.track .buttons {
+				position: absolute;
+				left: 10px;
+			}
+
+			.track .button {
+				background-color: rgba(255, 255, 255, 0.4);
+				width: 22px;
+				height: 23px;
+				text-align: center;
+				font-size: 16px;
+				margin-bottom: 3px;
+				line-height:20px;
+			}
+			
+			.track .button:hover {
+				background-color: rgba(255, 255, 255, 0.8);
+				cursor: hand
+			}
+			
+			.nowplaying .art {
+				height: 200px;
+				margin-top: -125px;
+			}
+			
+			.bucket {
+				border: 0;
+				border-top: 3px dashed #444;
+				margin: 0 10px 0 30px;
+			}
+
+			</style>
+			<script>
+				$(function () {
+					var time = 10;
+					setInterval(function () {
+						if (time != 0) {
+							$('#progress').css('width', parseInt($('#progress').css('width'),10)+1);
+						}
+					}, 100);
+					setInterval(function () {
+						if (time == 0) {
+							$('#progress').css('width', 0);
+							$('.nowplaying').animate({opacity: 0}, function () {
+								$('.nowplaying').slideUp(function () {
+									$('.nowplaying').remove();
+									$($('.track')[0]).addClass('nowplaying');
+									time = 328;
+								});
+							});
+						} else {
+							$('#progress').css('width', parseInt($('#progress').css('width'),10)+1);
+							$('.nowplaying .length').text(Math.floor(time/60)+'m '+time%60+'s');
+							time--;
+						}
+					}, 1000);
+					
+					$('.track .art').live('mouseover', function () {
+						$(this).css('z-index', 10);
+						$(this).stop().animate({ height: this.naturalHeight });
+					});
+					
+					$('.track .art').live('mouseout', function () {
+						$(this).css('z-index', 9);
+						var self = this;
+						if ($($(this).parent('.track')).hasClass('nowplaying'))
+							$(this).stop().animate({ height: '200px' }, function () {
+								$(self).css('z-index', 6);
+							});
+						else 
+							$(this).stop().animate({ height: '75px' }, function () {
+								$(self).css('z-index', 6);
+							});
+					});
+				});
+			</script>
+	</head>
+	<body>
+		<div style="height: 125px; color: white;">Login, upload, etc</div>
+		<div id="progress" style="position: absolute; top: 143px; left: 38px; background-color: #000; z-index: -2; width: 200px; height: 75px;">.</div>
+		<div id="playlist">
+			<div class="track nowplaying">
+				<div class="buttons"></div>
+				<img class="art" src="B000EHQ83M.jpg">
+				<div class="info">
+					<div class="artist">MC Lars</div>
+					<div class="title">Download This Song</div>
+				</div>
+				<div class="extra" style="right: 223px;">
+					<div class="uploader">Uploaded by Connorhd</div>
+					<div class="length">0m 10s</div>
+				</div>
+			</div>
+			<div class="track">
+				<div class="buttons"><div class="button">&#10005;</div></div>
+				<div class="info">
+					<div class="artist">Random Anime</div>
+					<div class="title">Doesn't have album art</div>
+				</div>
+				<div class="extra" style="right: 25px;">
+					<div class="uploader">Uploaded by Someone</div>
+					<div class="length">5m 28s</div>
+				</div>
+			</div>
+			<hr class="bucket">
+			<div class="track">
+				<div class="buttons"><div class="button">&darr;</div><div class="button">&#10005;</div></div>
+				<img class="art" src="B0011HF61Y.jpg">
+				<div class="info">
+					<div class="artist">Say Hi</div>
+					<div class="title">Northwestern Girls</div>
+				</div>
+				<div class="extra" style="right: 98px;">
+					<div class="uploader">Uploaded by Connorhd</div>
+					<div class="length">3m 41s</div>
+				</div>
+			</div>
+			<hr class="bucket">
+			<div class="track">
+				<div class="buttons"><div class="button">&uarr;</div><div class="button">&#10005;</div></div>
+				<img class="art" src="SMWi7CLoZ2Q.jpg">
+				<div class="info">
+					<div class="artist">Youtube</div>
+					<div class="title long">Nom Nom Nom Nom Nom Nom Nom - Parry Gripp</div>
+				</div>
+				<div class="extra" style="right: 123px;">
+					<div class="uploader">Uploaded by Connorhd</div>
+					<div class="length">1m 10s</div>
+				</div>
+			</div>
+
+		</div>
+	</body>
+</body>

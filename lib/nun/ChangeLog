@@ -1,0 +1,27 @@
+In work, Version 0.2
+
+* Syntax checking (in work)
+
+* Switch to new testing system (in work)
+
+2010-10-25, Version 0.1.13
+
+* Totally remove dependencies to sys
+
+2010.08.11, Version 0.1.12
+
+* Remove dependency to sys.inherits
+
+* Add npm package
+
+2010.06.21, Version 0.1.11
+
+* Serious performance boost - faster three times
+
+* Remove obsolete tests and files
+
+* Add benchmark
+
+2010.06.15, Version 0.1.10
+
+* Stable version
