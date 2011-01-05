@@ -101,7 +101,7 @@ exports.amazonAlbum = function(dir, artist, album, callback) {
 								});
 							} else {
 								// Amazon has failed us
-								callback('Not found');
+								callback('Not found on amazon');
 							}
 						});
 					} else {
@@ -111,7 +111,7 @@ exports.amazonAlbum = function(dir, artist, album, callback) {
 				});
 			} else {
 				// Musicbrainz has failed us :(
-				callback('Not found');
+				callback('Not found on musicbrainz');
 			}
 		});
 	});
