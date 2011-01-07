@@ -5,7 +5,7 @@ var exec = require('child_process').exec;
 
 exports.getInfo = function(path, callback){
 
-	exec("mplayer -frames 0 "+path, function (error, stdout, stderr) {		
+	exec("mplayer -ao null -vo null -frames 0 "+path, function (error, stdout, stderr) {		
 	//Mplayer the file and stop it, collect data from stdout
 		
 		if (error) {
