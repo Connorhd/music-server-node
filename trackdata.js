@@ -1,11 +1,10 @@
 #!/usr/local/bin/node
 var sys = require('sys');
 var fs = require('fs');
-var exec = require('child_process').exec;
 
 exports.getInfo = function(path, callback){
 
-	exec("mplayer -ao null -vo null -frames 0 "+path, function (error, stdout, stderr) {		
+	require('child_process').exec("mplayer -ao null -vo null -frames 0 "+path, {timeout: 5000, killSignal: 'SIGKILL'}, function (error, stdout, stderr) {		
 	//Mplayer the file and stop it, collect data from stdout
 		
 		if (error) {
