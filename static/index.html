@@ -7,9 +7,12 @@
 				font-family: sans-serif;
 				background-color: #222;
 			}
-			.track {
-				background-color: rgba(255, 255, 255, 0.4);
+			.trackouter {
+				background-color: rgb(128, 128, 128);
 				margin: 10px 10px 10px 30px;
+			}
+			.track {
+				background-color: rgba(128, 128, 128, 0.4);
 				overflow: hidden;
 				white-space: nowrap;
 				height: 75px;
@@ -29,7 +32,7 @@
 				font-size: 18px;
 				padding-left: 2px;
 				padding-top: 5px;
-				color: #eee;
+				color: #f5f5f5;
 				font-weight: bold;
 			}
 			.track .title {
@@ -47,7 +50,7 @@
 				position: absolute;
 				z-index: 4;
 				padding-top: 5px;
-				color: #444;
+				color: #333;
 			}
 			.track .uploader {
 				font-size: 15px;
@@ -89,27 +92,98 @@
 
 			</style>
 			<script>
+				function getDominantColor(imgEl) {
+					var canvas = document.createElement('canvas'),
+						context = canvas.getContext && canvas.getContext('2d'),
+						data,
+						i = -4,
+						length,
+						size = 20;
+					if (!context) {
+						return defaultRGB;
+					}
+
+					canvas.height = size;
+					canvas.width = size;
+					context.drawImage(imgEl, 0, 0, size, size);
+					
+					try {
+						data = context.getImageData(0, 0, size, size);
+					} catch(e) {
+						return {r:128,g:128,b:128};
+					}
+					length = data.data.length;
+					
+					var max = 0;
+					var colors = {}
+					var maxColor = {r:0,g:0,b:0};
+					var count = 0;
+					var avg = {r:0,g:0,b:0};
+					while ( (i += 4) < length ) {
+						count++;
+						var cmpstr = data.data[i]+','+data.data[i+1]+','+data.data[i+2];
+						if (colors[cmpstr]) {
+							colors[cmpstr]++;
+						} else {
+							colors[cmpstr] = 1;
+						}
+						
+						if (colors[cmpstr] > max) {
+							max = colors[cmpstr];
+							maxColor = {r:data.data[i],g:data.data[i+1],b:data.data[i+2]}
+						}
+						avg.r += data.data[i];
+						avg.g += data.data[i+1];
+						avg.b += data.data[i+2];
+					}
+					avg.r = Math.round(avg.r/count);
+					avg.g = Math.round(avg.g/count);
+					avg.b = Math.round(avg.b/count);
+					
+					// Maybe we should take the average of all the colours in max/n (n=2 maybe)
+					
+					if (max > size) {
+						return maxColor;
+					} else {
+						return avg;
+					}
+				}
+			
+			
 				$(function () {
-					var time = 10;
+					$('img').load(function () {
+						var rgb = getDominantColor(this);
+						$(this).parent('.track').css('background-color', 'rgba('+rgb.r+','+rgb.g+','+rgb.b+', 0.4)');
+					});
+					var trackTime = 10;
+					var startTime = (new Date).getTime();
+					var showProgress = true;
 					setInterval(function () {
-						if (time != 0) {
-							$('#progress').css('width', parseInt($('#progress').css('width'),10)+1);
+						if (showProgress) {
+							$('#progress').css('width', (((new Date).getTime()-startTime)/1000)/trackTime*100+'%');
 						}
 					}, 100);
 					setInterval(function () {
+						time = trackTime-Math.round(((new Date).getTime()-startTime)/1000);
 						if (time == 0) {
-							$('#progress').css('width', 0);
-							$('.nowplaying').animate({opacity: 0}, function () {
-								$('.nowplaying').slideUp(function () {
-									$('.nowplaying').remove();
+							$('.nowplaying .length').text(Math.floor(time/60)+'m '+time%60+'s');
+							$($('.nowplaying').parent()).animate({opacity: 0}, function () {
+								$('#progress').css('display', 'none');
+								$($('.nowplaying').parent()).slideUp(function () {
+									$($('.nowplaying').parent()).remove();
+									if ($($('#playlist').children()[0]).hasClass('bucket')) {
+										$($('#playlist').children()[0]).remove();
+									}
 									$($('.track')[0]).addClass('nowplaying');
-									time = 328;
+									$('#progress').css('display', 'block');
+									showProgress = true;
 								});
 							});
+							trackTime = 30;
+							startTime = (new Date).getTime();
+							showProgress = false;
 						} else {
-							$('#progress').css('width', parseInt($('#progress').css('width'),10)+1);
 							$('.nowplaying .length').text(Math.floor(time/60)+'m '+time%60+'s');
-							time--;
 						}
 					}, 1000);
 					
@@ -134,59 +208,107 @@
 			</script>
 	</head>
 	<body>
-		<div style="height: 125px; color: white;">Login, upload, etc</div>
-		<div id="progress" style="position: absolute; top: 143px; left: 38px; background-color: #000; z-index: -2; width: 200px; height: 75px;">.</div>
+		<div style="height: 125px; position: relative; margin-right: 220px;"><iframe scrolling="no" style="border: 0; height: 100%; width: 100%; color: white; background-color: red;" src="testupload.html"></iframe></div>
+		<div style="position: absolute; top: 143px; left: 38px; right: 20px; height: 75px;"><div id="progress" style="background-color: #000; z-index: 1; width: 0; height: 75px; opacity: 0.3">.</div></div>
 		<div id="playlist">
-			<div class="track nowplaying">
-				<div class="buttons"></div>
-				<img class="art" src="B000EHQ83M.jpg">
-				<div class="info">
-					<div class="artist">MC Lars</div>
-					<div class="title">Download This Song</div>
-				</div>
-				<div class="extra" style="right: 223px;">
-					<div class="uploader">Uploaded by Connorhd</div>
-					<div class="length">0m 10s</div>
+			<div class="trackouter">
+				<div class="track nowplaying">
+					<div class="buttons"></div>
+					<img class="art" src="B000EHQ83M.jpg" >
+					<div class="info">
+						<div class="artist">MC Lars</div>
+						<div class="title">Download This Song</div>
+					</div>
+					<div class="extra" style="right: 223px;">
+						<div class="uploader">Uploaded by Connorhd</div>
+						<div class="length">0m 10s</div>
+					</div>
 				</div>
 			</div>
-			<div class="track">
-				<div class="buttons"><div class="button">&#10005;</div></div>
-				<div class="info">
-					<div class="artist">Random Anime</div>
-					<div class="title">Doesn't have album art</div>
+			<div class="trackouter">
+				<div class="track">
+					<div class="buttons"><div class="button">&#10005;</div></div>
+					<div class="info">
+						<div class="artist">Random Anime</div>
+						<div class="title">Doesn't have album art</div>
+					</div>
+					<div class="extra" style="right: 25px;">
+						<div class="uploader">Uploaded by Someone</div>
+						<div class="length">5m 28s</div>
+					</div>
 				</div>
-				<div class="extra" style="right: 25px;">
-					<div class="uploader">Uploaded by Someone</div>
-					<div class="length">5m 28s</div>
+			</div>
+			<div class="trackouter">
+				<div class="track" style="background-color: rgba(0, 0, 0, 0.4)">
+					<div class="buttons"><div class="button">&#10005;</div></div>
+					<div class="info">
+						<div class="artist">Black example</div>
+						<div class="title">Doesn't have album art</div>
+					</div>
+					<div class="extra" style="right: 25px;">
+						<div class="uploader">Uploaded by Someone</div>
+						<div class="length">5m 28s</div>
+					</div>
+				</div>
+			</div>
+			<div class="trackouter">
+				<div class="track" style="background-color: rgba(255, 255, 255, 0.4)">
+					<div class="buttons"><div class="button">&#10005;</div></div>
+					<div class="info">
+						<div class="artist">White example</div>
+						<div class="title">Doesn't have album art</div>
+					</div>
+					<div class="extra" style="right: 25px;">
+						<div class="uploader">Uploaded by Someone</div>
+						<div class="length">5m 28s</div>
+					</div>
 				</div>
 			</div>
 			<hr class="bucket">
-			<div class="track">
-				<div class="buttons"><div class="button">&darr;</div><div class="button">&#10005;</div></div>
-				<img class="art" src="B0011HF61Y.jpg">
-				<div class="info">
-					<div class="artist">Say Hi</div>
-					<div class="title">Northwestern Girls</div>
-				</div>
-				<div class="extra" style="right: 98px;">
-					<div class="uploader">Uploaded by Connorhd</div>
-					<div class="length">3m 41s</div>
+			<div class="trackouter">
+				<div class="track">
+					<div class="buttons"><div class="button">&darr;</div><div class="button">&#10005;</div></div>
+					<img class="art" src="B0011HF61Y.jpg">
+					<div class="info">
+						<div class="artist">Say Hi</div>
+						<div class="title">Northwestern Girls</div>
+					</div>
+					<div class="extra" style="right: 98px;">
+						<div class="uploader">Uploaded by Connorhd</div>
+						<div class="length">3m 41s</div>
+					</div>
 				</div>
 			</div>
 			<hr class="bucket">
-			<div class="track">
-				<div class="buttons"><div class="button">&uarr;</div><div class="button">&#10005;</div></div>
-				<img class="art" src="SMWi7CLoZ2Q.jpg">
-				<div class="info">
-					<div class="artist">Youtube</div>
-					<div class="title long">Nom Nom Nom Nom Nom Nom Nom - Parry Gripp</div>
-				</div>
-				<div class="extra" style="right: 123px;">
-					<div class="uploader">Uploaded by Connorhd</div>
-					<div class="length">1m 10s</div>
+			<div class="trackouter">
+				<div class="track">
+					<div class="buttons"><div class="button">&uarr;</div><div class="button">&#10005;</div></div>
+					<img class="art" src="SMWi7CLoZ2Q.jpg">
+					<div class="info">
+						<div class="artist">Youtube</div>
+						<div class="title long">Nom Nom Nom Nom Nom Nom Nom - Parry Gripp</div>
+					</div>
+					<div class="extra" style="right: 123px;">
+						<div class="uploader">Uploaded by Connorhd</div>
+						<div class="length">1m 10s</div>
+					</div>
 				</div>
 			</div>
-
+			<hr class="bucket">
+			<div class="trackouter">
+				<div class="track">
+					<div class="buttons"><div class="button">&darr;</div><div class="button">&#10005;</div></div>
+					<img class="art" src="B0007MVY24.jpg">
+					<div class="info">
+						<div class="artist">Basement Jaxx</div>
+						<div class="title">Red Alert</div>
+					</div>
+					<div class="extra" style="right: 98px;">
+						<div class="uploader">Uploaded by Connorhd</div>
+						<div class="length">3m 39s</div>
+					</div>
+				</div>
+			</div>
 		</div>
 	</body>
 </body>
