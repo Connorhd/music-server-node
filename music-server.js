@@ -22,8 +22,12 @@ db.on('load', function() {
 		cookie.secret = db.get('config_cookie_secret');
 	} else {
 		// This could probably be better
-		cookie.secret = Math.floor(Math.random()*10000000000000000);
+		cookie.secret = "s"+Math.floor(Math.random()*10000000000000000);
 		db.set('config_cookie_secret', cookie.secret);
+	}
+
+	if (!db.get('config_global_salt')) {
+		db.set('config_global_salt', "s"+Math.floor(Math.random()*10000000000000000));
 	}
 	
 	// Start the HTTP server
@@ -35,7 +39,7 @@ db.on('load', function() {
 				res.writeHead(200, {'content-type': 'text/html'});
 				res.write('received upload:\n\n');
 				res.write(sys.inspect({fields: fields, files: files}));
-				trackdata.getInfo(files.upload.path, function (data) {
+				trackdata.getInfo(files.upload.path, function (err, data) {
 					res.write(sys.inspect(data));
 					if (data.artist && data.track) {
 						art.amazonAlbum('./static/art/', data.artist, data.album, function(error, img) {
